@@ -35,24 +35,31 @@ r = Routine({
 		b.sendMsg("/u_noise_intensity", 0.rrand(0.8));
 		b.sendMsg("/u_noise_density", 0.rrand(0.9));
 
+		1.yield;
+
+		b.sendMsg("/u_fb_mix", 0.1.exprand(1.0));
+
+		0.1.yield;
+
 		b.sendMsg("/u_shape_mask", ~mask);
 		b.sendMsg("/u_fb_mask", ~mask - 0.rrand(~mask));
-		b.sendMsg("/u_fb_mix", 0.rrand(0.5));
-		b.sendMsg("/u_fb_scale", 0.99.rrand(1.1), 0.99.rrand(1.1));
-		b.sendMsg("/u_fb_displace", 0.rrand(0.02), 0.rrand(0.02));
 
 		10.do({
 			arg i;
 
 			b.sendMsg(
 				"/u_dx",
-				sin(i * 0.01) * 0.1,
+				sin(sin(i * 0.01)) * sin(j),
 			);
 
 			b.sendMsg(
 				"/u_dy",
-				sin(i * j * 0.0001) * 0.1,
+				sin(sin(i * j * 0.1)) * 0.1,
 			);
+
+			b.sendMsg("/u_fb_scale", 0.1.exprand(1.2), 0.1.exprand(1.2));
+			b.sendMsg("/u_fb_displace", 0.rrand(0.0001), 0.rrand(0.0001));
+
 
 			1.yield;
 		})
