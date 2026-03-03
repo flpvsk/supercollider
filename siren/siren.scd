@@ -27,7 +27,7 @@ s.waitForBoot({
     modFreq = \modFreq.kr(10);
     modShape = \modShape.kr(0).clip(0, 1);
     env = EnvGen.kr(
-      Env.asr(\rise.kr(0.001), 1.0, \fall.kr(0.5), curve: [4, -4]),
+      Env.asr(\rise.kr(0.001), 1.0, 2 * modFreq.clip(1, 1000).reciprocal, curve: [4, -4]),
       gate: \gate.kr(1),
       levelScale: \amp.kr(0.2),
       doneAction: Done.freeSelf,
@@ -92,10 +92,10 @@ p = Pbind(
   \type, \note,
   \instrument, \siren,
   \dur, 4,
-  \sustain, 2,
-  \midinote, Prand([40, 52, 64, 76, 28], 10),
+  \sustain, 1,
+  \midinote, Prand([40, 52, 64, 76, 28], 20),
   \shape, Prand([0, 0.2, 0.4, 0.5, 0.7, 0.9, 1], inf),
-  \modFreq, Prand([1, 4, 8, 16, 32, 64, 128], inf),
+  \modFreq, Prand([0.1, 0.4, 0.8, 1.6, 4, 8, 16, 32, 64, 128], inf),
   \modShape, Prand([0, 0.5, 1], inf),
 ).play
 )
