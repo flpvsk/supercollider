@@ -27,7 +27,7 @@ s.waitForBoot({
     modFreq = \modFreq.kr(10);
     modShape = \modShape.kr(0).clip(0, 1);
     env = EnvGen.kr(
-      Env.asr(\rise.kr(0.001), 1.0, 2 * modFreq.clip(1, 1000).reciprocal, curve: [4, -4]),
+      Env.asr(\rise.kr(0.001), 1.0, modFreq.reciprocal.clip(0.5, 2), curve: [4, -4]),
       gate: \gate.kr(1),
       levelScale: \amp.kr(0.2),
       doneAction: Done.freeSelf,
