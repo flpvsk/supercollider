@@ -16,6 +16,7 @@ s.freeAll;
 s.waitForBoot({
   SynthDef.new(\siren, {
     var sig, mod, env,
+    modLine, modTri, modPerc,
     modSq, modSin, modSaw,
     freq, sigSin, sigSaw, sigSq,
     modShape, modAmt, modFreq,
@@ -26,17 +27,29 @@ s.waitForBoot({
     modAmt = \modAmt.kr(1);
     modFreq = \modFreq.kr(10);
     modShape = \modShape.kr(0).clip(0, 1);
-    env = EnvGen.kr(
+    env = EnvGen.ar(
       Env.asr(
         \rise.kr(0.001),
         1.0,
-        modFreq.reciprocal.clip(0.5, 2),
+        \fall.kr(2), // modFreq.reciprocal.clip(0.5, 2),
         curve: [-4, 4]
       ),
       gate: \gate.kr(1),
       levelScale: \amp.kr(0.2),
       doneAction: Done.freeSelf,
     );
+    modLine = EnvGen.ar(
+      Env.linen(slewT, 1.0, modFreq.reciprocal - slewT, curve: 4),
+      gate: env > 0
+    ).range(0, modAmt * freq);
+    modTri = EnvGen.ar(
+      Env.triangle(modFreq.reciprocal),
+      gate: env > 0
+    ).range(0, modAmt * freq);
+    modPerc = EnvGen.ar(
+      Env.perc(slewT, 10.0, 1, curve: -4),
+      gate: env > 0
+    ).range(0, modAmt * freq);
     modSq = EnvGen.ar(
       Env(
         levels: [0, 1, 1, 0, 0, 0],
@@ -75,7 +88,13 @@ s.waitForBoot({
       gate: env > 0
     ).range(0, modAmt * freq);
 
-    mod = SelectX.ar(\modShape.kr(0) * 2, [ modSin, modSaw, modSq ]);
+    mod = SelectX.ar(
+    ((\modShape.kr(0).clip(-1, 1) + 1) * 0.5 * 5),
+    [
+    modLine, modTri, modPerc,
+    modSin, modSaw, modSq,
+    ]
+    );
 
     sigSin = SinOsc.ar(freq: freq + mod);
     sigSaw = Saw.ar(freq: freq + mod);
@@ -117,17 +136,18 @@ s.waitForBoot({
 ~rev.set(\mix, -0.5);
 
 (
+p.stop;
 p = Pbind(
   \type, \note,
   \instrument, \siren,
-  \dur, 3,
-  \sustain, 1,
-  \out, 2,
+  \dur, 4,
+  \sustain, Pseq([1], inf),
+  \out, 0,
   \amp, 0.5,
-  \midinote, Prand([40, 52, 64, 76, 28], 4),
-  \shape, Prand([0, 0.2, 0.4, 0.5, 0.7, 0.9, 1], inf),
-  \modFreq, Prand([0.1, 0.4, 0.8, 1.6, 4, 8, 16, 32], inf),
-  \modShape, Prand([0, 0.5, 1], inf),
+  \midinote, Pseq([64, 76, 64, 52, 52, 64, 52, 40], 1), // Prand([40, 52, 64, 76, 28], 40),
+  \shape, Pseq([0, 0, 1, 0.5, 0, 0, 0, 0], inf), // Prand([0, 0.2, 0.4, 0.5, 0.7, 0.9, 1], inf),
+  \modFreq, Pseq([6.4, 8, 3.2, 0.8, 12, 0.8, 8, 128], inf), // Prand([0.1, 0.4, 0.8, 1.6, 4, 8, 16, 32, 64, 128], inf),
+  \modShape, Pseq([1, 0.5, 0.4, -0.5, 0.5, 1, 1, -0.25], inf), // Prand([-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1], inf),
 ).play
 )
 
@@ -135,6 +155,7 @@ p.stop;
 
 s.plotTree;
 s.freeAll;
+s.makeWindow;
 
 x = Synth(\siren);
 x.set(\gate, 1);
@@ -192,6 +213,14 @@ Pbind;
       times: 1 / 2,
       curve: \sine
     )
+  )
+}.plot(4))
+
+
+({
+  var gate = LFPulse.kr(2);
+  EnvGen.kr(
+    Env.triangle(1.0).test.plot
   )
 }.plot(4))
 
